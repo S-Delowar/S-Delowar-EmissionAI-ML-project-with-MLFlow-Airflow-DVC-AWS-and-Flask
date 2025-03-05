@@ -1,0 +1,158 @@
+name: Deploy Airflow and Flask
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push-airflow-image:
+    name: Build and Push Airflow image to ECR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon Airflow ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build and Tag Airflow Docker Image
+        run: |
+          docker build -t airflow -f ./airflow/Dockerfile.airflow ./airflow
+          docker tag airflow:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.AIRFLOW_ECR_REPOSITORY }}:latest
+
+      - name: Push Docker Image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.AIRFLOW_ECR_REPOSITORY }}:latest
+
+  deploy-airflow-ecr-on-ec2:
+    name: Deploy Airflow ECR image on EC2 
+    runs-on: ubuntu-latest
+    needs: build-and-push-airflow-image
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: SSH into EC2 and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AIRFLOW_EC2_HOST }}
+          username: ${{ secrets.AIRFLOW_EC2_USERNAME }}
+          key: ${{ secrets.AIRFLOW_EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/
+            if [ ! -d "airflow-project" ]; then
+              echo "Cloning repository for the first time"
+              git clone https://github.com/S-Delowar/S-Delowar-EmissionAI-ML-project-with-MLFlow-Airflow-DVC-AWS-and-Flask.git airflow-project
+              cd airflow-project
+              mkdir -p ./dags ./logs ./plugins
+              sudo chown -R 50000:0 ./dags ./logs ./plugins
+            else
+              echo "Repository already exists, pulling latest changes"
+              cd airflow-project && git pull origin main
+            fi
+
+            # Create .env file dynamically with secrets and environment variables
+            cat <<EOF > .env
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+            AIRFLOW_ECR_REPOSITORY=${{ secrets.AIRFLOW_ECR_REPOSITORY }}
+            MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}
+            RDS_HOST=${{ secrets.RDS_HOST }}
+            RDS_USER=${{ secrets.RDS_USER }}
+            RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+            RDS_DB=${{ secrets.RDS_DB }}
+            RDS_PORT=${{ secrets.RDS_PORT }}
+            EOF
+
+            # Login to aws ecr
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+            # Pull the image from ECR and start the containers
+            docker-compose pull
+
+            echo "Stopping and removing running container (if any exists)"
+            docker-compose down || true
+
+            # Run the container using the latest ECR image
+            docker-compose up -d
+
+
+  build-and-push-flask-image:
+    name: Build and Push Flask Image to ECR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon Flask ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build and Tag Flask Docker Image
+        run: |
+          docker build -f flask/Dockerfile -t emission-ai-flask-app .
+          docker tag emission-ai-flask-app:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.FLASK_ECR_REPOSITORY }}:latest
+
+      - name: Push Flask Docker Image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.FLASK_ECR_REPOSITORY }}:latest
+
+  deploy-flask-ecr-image-on-ec2:
+    name: Continuous Deployment of Flask App
+    runs-on: ubuntu-latest
+    needs: build-and-push-flask-image
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.FLASK_EC2_HOST }}
+          username: ${{ secrets.FLASK_EC2_USERNAME }}
+          key: ${{ secrets.FLASK_EC2_SSH_KEY }}
+          script: |
+            # Navigate to the working directory
+            cd /home/ubuntu/
+
+            # Create .env file dynamically with secrets and environment variables
+            cat <<EOF > .env
+            MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}
+            EOF
+
+            echo "Logging to ECR"
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+            echo "Pulling latest image from ECR"
+            docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.FLASK_ECR_REPOSITORY }}:latest
+
+            echo "Stopping and removing running container (if any exists)"
+            docker stop flask_api_app || true
+            docker rm flask_api_app || true
+
+            echo "Running new container"
+            docker run -d --name flask_api_app -p 8000:8000 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.FLASK_ECR_REPOSITORY }}:latest
