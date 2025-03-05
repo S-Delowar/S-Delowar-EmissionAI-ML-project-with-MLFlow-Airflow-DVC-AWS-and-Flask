@@ -1,0 +1,45 @@
+columns:
+  - name: model_year
+    type: int
+
+  - name: make
+    type: object
+
+  - name: model
+    type: object
+
+  - name: vehicle_class
+    type: object
+
+  - name: engine_size_l
+    type: float
+
+  - name: cylinders
+    type: int
+
+  - name: transmission
+    type: object
+
+  - name: fuel_type
+    type: object
+
+  - name: city_l_per_100km
+    type: float
+
+  - name: highway_l_per_100km
+    type: float
+
+  - name: combined_l_per_100km
+    type: float
+
+  - name: combined_mpg
+    type: int
+
+  - name: co2_emissions_g_per_km
+    type: int
+
+  - name: co2_rating
+    type: float
+
+  - name: smog_rating
+    type: float
