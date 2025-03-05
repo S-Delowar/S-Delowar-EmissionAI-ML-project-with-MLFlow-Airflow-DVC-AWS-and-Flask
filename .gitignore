@@ -3,3 +3,6 @@
 logs/
 venv
 .venv
+artifacts/
+preprocessor/
+model/

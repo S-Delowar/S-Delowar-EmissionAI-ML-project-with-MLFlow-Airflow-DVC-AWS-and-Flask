@@ -7,7 +7,7 @@ import os
 import pandas as pd
 
 from src.component.data_ingestion import DataIngestion
-# from src.component.data_validation import DataValidation
+from src.component.data_validation import DataValidation
 # import mlflow
 
 # from src.component.model_trainer_and_evaluate import ModelTrainer
@@ -43,12 +43,12 @@ with DAG(
         
         return df.to_json()   
        
-    # @task
-    # def validation(df_json:str):
-    #     df = pd.read_json(df_json)
+    @task
+    def validation(df_json:str):
+        df = pd.read_json(df_json)
         
-    #     data_validation = DataValidation()
-    #     data_validation.validate_data(df)
+        data_validation = DataValidation()
+        data_validation.validate_data(df)
         
     
     # @task
@@ -70,5 +70,5 @@ with DAG(
           
     
     # dag dependencies
-    ingest_data()
+    validation(ingest_data())
     # validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating() >> data_and_model_versioning_dvc_s3()
