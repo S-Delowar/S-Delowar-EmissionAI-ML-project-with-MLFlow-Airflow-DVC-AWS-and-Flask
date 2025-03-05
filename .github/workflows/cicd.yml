@@ -55,8 +55,7 @@ jobs:
               echo "Cloning repository for the first time"
               git clone https://github.com/S-Delowar/S-Delowar-EmissionAI-ML-project-with-MLFlow-Airflow-DVC-AWS-and-Flask.git airflow-project
               cd airflow-project
-              mkdir -p ./dags ./logs ./plugins
-              sudo chown -R 50000:0 ./dags ./logs ./plugins
+              sudo chown -R 50000:0 .
             else
               echo "Repository already exists, pulling latest changes"
               cd airflow-project && git pull origin main

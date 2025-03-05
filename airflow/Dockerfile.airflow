@@ -22,3 +22,7 @@ RUN pip install --upgrade pip && \
       --constraint https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.9.txt
 
 
+
+
+# Image build command
+# docker build -t <image_name> -f ./airflow/Dockerfile.airflow ./airflow
