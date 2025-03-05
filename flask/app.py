@@ -11,10 +11,10 @@ load_dotenv()
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 # Set the MLflow tracking URI
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-# List registered models
 
-# for model in mlflow.search_registered_models():
-#     print(model.name)
+# List registered models
+for model in mlflow.search_registered_models():
+    print(model.name)
 
 # Define the model names
 model_name = "emission_ai_best_model"
