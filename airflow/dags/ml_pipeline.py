@@ -70,6 +70,4 @@ with DAG(
           
     
     # dag dependencies
-    data_and_model_versioning_dvc_s3()
-    # validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating()
-    # validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating() >> data_and_model_versioning_dvc_s3()
+    validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating() >> data_and_model_versioning_dvc_s3()
