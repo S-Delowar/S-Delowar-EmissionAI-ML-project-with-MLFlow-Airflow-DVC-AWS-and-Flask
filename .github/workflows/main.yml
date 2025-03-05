@@ -27,7 +27,7 @@ jobs:
 
       - name: Build and Tag Airflow Docker Image
         run: |
-          docker-compose -f docker-compose.yml build
+          docker build -t airflow -f ./airflow/Dockerfile.airflow ./airflow
           docker tag airflow:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.AIRFLOW_ECR_REPOSITORY }}:latest
 
       - name: Push Docker Image to ECR
