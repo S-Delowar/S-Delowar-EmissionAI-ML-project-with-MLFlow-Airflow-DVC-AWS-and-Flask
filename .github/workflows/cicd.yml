@@ -54,8 +54,8 @@ jobs:
             if [ ! -d "airflow-project" ]; then
               echo "Cloning repository for the first time"
               git clone https://github.com/S-Delowar/S-Delowar-EmissionAI-ML-project-with-MLFlow-Airflow-DVC-AWS-and-Flask.git airflow-project
+              sudo chown -R 50000:0 airflow-project
               cd airflow-project
-              sudo chown -R 50000:0 .
             else
               echo "Repository already exists, pulling latest changes"
               cd airflow-project && git pull origin main
@@ -141,6 +141,9 @@ jobs:
             # Create .env file dynamically with secrets and environment variables
             cat <<EOF > .env
             MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
             EOF
 
             echo "Logging to ECR"
