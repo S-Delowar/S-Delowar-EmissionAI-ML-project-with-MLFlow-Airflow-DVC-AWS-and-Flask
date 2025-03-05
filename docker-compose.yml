@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   airflow:
-    # image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AIRFLOW_ECR_REPOSITORY}:latest
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AIRFLOW_ECR_REPOSITORY}:latest
     build:
       context: ./airflow 
       dockerfile: Dockerfile.airflow
@@ -37,7 +37,6 @@ services:
       - ./preprocessor/:/opt/airflow/preprocessor/
       - ./.dvc:/opt/airflow/.dvc
       - ./.dvcignore:/opt/airflow/.dvcignore
-      - ./.git:/opt/airflow/.git
     ports:
       - "8080:8080"
     depends_on:
