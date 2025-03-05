@@ -8,10 +8,10 @@ import pandas as pd
 
 from src.component.data_ingestion import DataIngestion
 from src.component.data_validation import DataValidation
-# import mlflow
+import mlflow
 
 # from src.component.model_trainer_and_evaluate import ModelTrainer
-# from src.component.preprocessing import DataTransformation
+from src.component.preprocessing import DataTransformation
 # from src.component.versioning import VERSIONING
 
 
@@ -51,10 +51,10 @@ with DAG(
         data_validation.validate_data(df)
         
     
-    # @task
-    # def preprocessing():
-    #     data_transformer = DataTransformation()
-    #     data_transformer.transform_data()
+    @task
+    def preprocessing():
+        data_transformer = DataTransformation()
+        data_transformer.transform_data()
         
         
     # @task
@@ -70,5 +70,5 @@ with DAG(
           
     
     # dag dependencies
-    validation(ingest_data())
+    validation(ingest_data()) >> preprocessing()
     # validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating() >> data_and_model_versioning_dvc_s3()
