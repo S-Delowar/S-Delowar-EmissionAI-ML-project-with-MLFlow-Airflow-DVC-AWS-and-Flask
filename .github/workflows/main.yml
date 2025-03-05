@@ -37,7 +37,7 @@ jobs:
   deploy-airflow-ecr-on-ec2:
     name: Deploy Airflow ECR image on EC2 
     runs-on: ubuntu-latest
-    needs: build-and-push-airflow
+    needs: build-and-push-airflow-image
 
     steps:
       - name: Checkout Repository
