@@ -10,7 +10,7 @@ from src.component.data_ingestion import DataIngestion
 from src.component.data_validation import DataValidation
 import mlflow
 
-# from src.component.model_trainer_and_evaluate import ModelTrainer
+from src.component.model_trainer_and_evaluate import ModelTrainer
 from src.component.preprocessing import DataTransformation
 # from src.component.versioning import VERSIONING
 
@@ -57,10 +57,10 @@ with DAG(
         data_transformer.transform_data()
         
         
-    # @task
-    # def model_training_and_evaluating():
-    #     model_trainer = ModelTrainer()
-    #     model_trainer.train_and_evaluate()
+    @task
+    def model_training_and_evaluating():
+        model_trainer = ModelTrainer()
+        model_trainer.train_and_evaluate()
     
     # @task
     # def data_and_model_versioning_dvc_s3():
@@ -70,5 +70,5 @@ with DAG(
           
     
     # dag dependencies
-    validation(ingest_data()) >> preprocessing()
+    validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating()
     # validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating() >> data_and_model_versioning_dvc_s3()
