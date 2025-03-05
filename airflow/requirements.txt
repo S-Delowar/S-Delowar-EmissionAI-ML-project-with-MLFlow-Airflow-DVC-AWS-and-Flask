@@ -1,1 +1,7 @@
-##
+mlflow
+pandas
+python-dotenv
+SQLAlchemy
+joblib
+dvc
+dvc-s3

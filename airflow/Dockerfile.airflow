@@ -1,1 +1,16 @@
-FROM baseImage
+FROM apache/airflow:2.10.5-python3.9
+
+USER root
+# Copy requirements.txt to the container
+COPY requirements.txt /opt/airflow/requirements.txt
+
+RUN chown -R airflow:root /opt/airflow/
+
+USER airflow
+
+# Upgrade pip and install Python packages from requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r /opt/airflow/requirements.txt \
+      --constraint https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.9.txt
+
+

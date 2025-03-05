@@ -1,1 +1,63 @@
-#
+
+version: '3.8'
+
+services:
+  airflow:
+    # image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AIRFLOW_ECR_REPOSITORY}:latest
+    build:
+      context: ./airflow 
+      dockerfile: Dockerfile.airflow
+    restart: always
+    container_name: airflow
+    command: bash -c "
+              airflow db init &&
+              airflow db upgrade &&
+              airflow users create --username airflow --firstname sahed --lastname delowar \
+              --role Admin --email sd@mail.com --password airflow || echo 'User already exists' &&
+              airflow webserver &
+              sleep 10 &&
+              airflow scheduler
+            "
+    env_file:
+      - .env
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__FERNET_KEY=LRCTcvXDRU5Fm_Pd1awqk8jc0-9XTb8iTcUEmxi40TQ=
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__CORE__DAGS_FOLDER=/opt/airflow/dags
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres123@postgres/postgres_db
+      - PYTHONPATH=/opt/airflow/
+
+    volumes:
+      - ./airflow/dags/:/opt/airflow/dags/
+      - ./logs/:/opt/airflow/logs/
+      - ./src/:/opt/airflow/src/
+      - ./config/:/opt/airflow/config/
+      - ./artifacts/:/opt/airflow/artifacts/
+      - ./model/:/opt/airflow/model/
+      - ./preprocessor/:/opt/airflow/preprocessor/
+      - ./.dvc:/opt/airflow/.dvc
+      - ./.dvcignore:/opt/airflow/.dvcignore
+      - ./.git:/opt/airflow/.git
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+          
+
+  postgres:
+    image: postgres:13
+    restart: always
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+  minio_data:
