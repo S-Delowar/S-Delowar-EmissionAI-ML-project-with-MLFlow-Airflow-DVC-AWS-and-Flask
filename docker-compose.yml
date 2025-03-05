@@ -16,8 +16,7 @@ services:
               --role Admin --email sd@mail.com --password airflow || echo 'User already exists' &&
               airflow webserver &
               sleep 10 &&
-              airflow scheduler
-            "
+              airflow scheduler"
     env_file:
       - .env
     environment:
@@ -60,4 +59,3 @@ services:
 
 volumes:
   postgres_data:
-  minio_data:

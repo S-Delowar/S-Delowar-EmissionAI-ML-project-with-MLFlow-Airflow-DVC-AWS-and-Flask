@@ -12,7 +12,7 @@ import mlflow
 
 from src.component.model_trainer_and_evaluate import ModelTrainer
 from src.component.preprocessing import DataTransformation
-# from src.component.versioning import VERSIONING
+from src.component.versioning import VERSIONING
 
 
 # Define default_args
@@ -62,13 +62,14 @@ with DAG(
         model_trainer = ModelTrainer()
         model_trainer.train_and_evaluate()
     
-    # @task
-    # def data_and_model_versioning_dvc_s3():
-    #     versioning = VERSIONING()
-    #     versioning.version_artifacts()
+    @task
+    def data_and_model_versioning_dvc_s3():
+        versioning = VERSIONING()
+        versioning.version_artifacts()
         
           
     
     # dag dependencies
-    validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating()
+    data_and_model_versioning_dvc_s3()
+    # validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating()
     # validation(ingest_data()) >> preprocessing() >> model_training_and_evaluating() >> data_and_model_versioning_dvc_s3()

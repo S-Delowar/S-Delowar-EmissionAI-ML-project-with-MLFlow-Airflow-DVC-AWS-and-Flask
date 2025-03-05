@@ -1,10 +1,18 @@
 FROM apache/airflow:2.10.5-python3.9
 
 USER root
-# Copy requirements.txt to the container
-COPY requirements.txt /opt/airflow/requirements.txt
+
 
 RUN chown -R airflow:root /opt/airflow/
+
+# Create directories and base files
+# RUN mkdir -p /opt/airflow/.dvc && \
+#     touch /opt/airflow/.dvcignore
+
+# # Copy configuration files
+# COPY .dvc/config /opt/airflow/.dvc/config
+# COPY .dvcignore /opt/airflow/.dvcignore
+COPY requirements.txt /opt/airflow/requirements.txt
 
 USER airflow
 

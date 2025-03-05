@@ -1,0 +1,5 @@
+model,best_params,best_mse,best_rmse
+linear_regression,{},-0.9946824077138,
+random_forest_regressor,{},-0.9989030528881566,
+svr,{},-0.959655214068231,
+knn,{},-0.9907004207905608,
