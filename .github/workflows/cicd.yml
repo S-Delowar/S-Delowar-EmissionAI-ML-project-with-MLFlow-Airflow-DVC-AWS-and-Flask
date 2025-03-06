@@ -157,4 +157,4 @@ jobs:
             docker rm flask_api_app || true
 
             echo "Running new container"
-            docker run -d --name flask_api_app -p 8000:8000 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.FLASK_ECR_REPOSITORY }}:latest
+            docker run -d --name flask_api_app --env-file .env -p 8000:8000 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.FLASK_ECR_REPOSITORY }}:latest
