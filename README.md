@@ -2,7 +2,8 @@
 
 ## 📊 Project Overview
 This project implements an end-to-end machine learning pipeline that predicts CO₂ emissions from vehicle data. It leverages Apache Airflow for workflow automation, DVC for data and model versioning, MLflow for model tracking, Flask for API creating, and AWS for deployment.
-![Pipeline Workflow](assets/pipeline.png)
+
+![Pipeline Workflow](assets/pipeline.jpg)
 
 ## 🧰 Tech Stack
 
@@ -35,7 +36,8 @@ This project implements an end-to-end machine learning pipeline that predicts CO
 
 ### ⚙️ Automation with Airflow
 - The full ML pipeline (from data ingestion to artifact versioning) is automated and scheduled using **Apache Airflow**.
-![Pipeline Workflow](assets/airflow.png)
+- 
+![Pipeline Workflow](assets/airflow.jpg)
 
 ### 📊 Integrated MLflow
 - Runs on an **EC2 instance** with **AWS RDS PostgreSQL** as the backend store for tracking metadata and **S3** for storing artifacts.
@@ -45,12 +47,14 @@ This project implements an end-to-end machine learning pipeline that predicts CO
     - Evaluation metrics
     - Hyperparameter tuning reports
     - The best model
-![Pipeline Workflow](assets/mlflow.png)
+    - 
+![Pipeline Workflow](assets/mlflow.jpg)
 
 ### 🔮 Prediction API
 - Implements a **Flask API** for real-time predictions.
 - Loads the latest preprocessor and model from the **MLflow Model Registry**.
-![Pipeline Workflow](assets/api.png)
+- 
+![Pipeline Workflow](assets/api.jpg)
 
 ### 📦 Containerization and Deployment
 - Utilizes **Docker** for containerizing Airflow and the Flask API.
